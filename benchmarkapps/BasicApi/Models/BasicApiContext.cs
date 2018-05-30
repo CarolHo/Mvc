@@ -19,5 +19,10 @@ namespace BasicApi.Models
         public DbSet<Pet> Pets { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=BasicApi.db");
+        }
     }
 }

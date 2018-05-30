@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,22 +13,11 @@ namespace BasicViews
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json")
-                .Build();
-        }
-
-        public IConfiguration Configuration { get; }
-
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionString = Configuration["Data:DefaultConnection:ConnectionStringBasicViews"];
             services
-                .AddEntityFrameworkSqlServer()
-                .AddDbContext<BasicViewsContext>(c => c.UseSqlServer(connectionString));
+                .AddEntityFrameworkSqlite()
+                .AddDbContext<BasicViewsContext>();
 
             services.AddMvc();
         }

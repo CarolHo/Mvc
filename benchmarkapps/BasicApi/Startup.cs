@@ -19,16 +19,6 @@ namespace BasicApi
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
-        {
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json")
-                .Build();
-        }
-
-        public IConfiguration Configuration { get; }
-
         public void ConfigureServices(IServiceCollection services)
         {
             var rsa = new RSACryptoServiceProvider(2048);
@@ -45,11 +35,9 @@ namespace BasicApi
                 options.TokenValidationParameters.ValidIssuer = "BasicApi";
             });
 
-            services.AddEntityFrameworkSqlServer().AddDbContext<BasicApiContext>(options =>
-            {
-                var connectionString = Configuration["Data:DefaultConnection:ConnectionStringBasicApi"];
-                options.UseSqlServer(connectionString);
-            });
+            services
+                .AddEntityFrameworkSqlite()
+                .AddDbContext<BasicApiContext>();
 
             services.AddAuthorization(options =>
             {

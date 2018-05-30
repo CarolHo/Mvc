@@ -13,5 +13,10 @@ namespace BasicViews
         }
 
         public virtual DbSet<Person> People { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=BasicViews.db");
+        }
     }
 }
