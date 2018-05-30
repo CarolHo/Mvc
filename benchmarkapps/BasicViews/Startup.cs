@@ -68,20 +68,21 @@ namespace BasicViews
 
         public static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
+            var host = CreateWebHostBuilder(args)
                 .Build();
 
-            var application = new WebHostBuilder()
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://+:5000")
-                .UseConfiguration(config)
+                .UseConfiguration(new ConfigurationBuilder()
+                    .AddCommandLine(args)
+                    .Build())
                 .UseIISIntegration()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .Build();
-
-            application.Run();
-        }
+                .UseStartup<Startup>();
     }
 }

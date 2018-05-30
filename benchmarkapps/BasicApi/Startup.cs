@@ -119,19 +119,20 @@ namespace BasicApi
 
         public static void Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-                .AddCommandLine(args)
+            var host = CreateWebHostBuilder(args)
                 .Build();
 
-            var application = new WebHostBuilder()
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://+:5000")
-                .UseConfiguration(configuration)
+                .UseConfiguration(new ConfigurationBuilder()
+                    .AddCommandLine(args)
+                    .Build())
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .Build();
-
-            application.Run();
-        }
+                .UseStartup<Startup>();
     }
 }
