@@ -73,7 +73,7 @@ namespace BasicApi
                 .AddJsonFormatters(json => json.ContractResolver = new CamelCasePropertyNamesContractResolver())
                 .AddDataAnnotations();
 
-            services.AddSingleton<PetRepository>(new PetRepository());
+            services.AddSingleton(new PetRepository());
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment hosting)

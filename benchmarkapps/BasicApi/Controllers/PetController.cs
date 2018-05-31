@@ -31,12 +31,8 @@ namespace BasicApi.Controllers
                 .Include(p => p.Images)
                 .Include(p => p.Tags)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            if (pet == null)
-            {
-                return new NotFoundResult();
-            }
 
-            return new ObjectResult(pet);
+            return pet == null ? new NotFoundResult() : (IActionResult)new ObjectResult(pet);
         }
 
         [HttpGet("findByCategory/{categoryId}")]
@@ -47,12 +43,8 @@ namespace BasicApi.Controllers
                 .Include(p => p.Images)
                 .Include(p => p.Tags)
                 .FirstOrDefaultAsync(p => p.Category != null && p.Category.Id == categoryId);
-            if (pet == null)
-            {
-                return new NotFoundResult();
-            }
 
-            return new JsonResult(pet);
+            return pet == null ? new NotFoundResult() : (IActionResult)new JsonResult(pet);
         }
 
         [HttpGet("findByStatus")]
@@ -63,12 +55,8 @@ namespace BasicApi.Controllers
                 .Include(p => p.Images)
                 .Include(p => p.Tags)
                 .FirstOrDefaultAsync(p => p.Status == status);
-            if (pet == null)
-            {
-                return new NotFoundResult();
-            }
 
-            return new ObjectResult(pet);
+            return pet == null ? new NotFoundResult() : (IActionResult)new ObjectResult(pet);
         }
 
         [HttpGet("findByTags")]
@@ -79,12 +67,8 @@ namespace BasicApi.Controllers
                 .Include(p => p.Images)
                 .Include(p => p.Tags)
                 .FirstOrDefaultAsync(p => p.Tags.Any(t => tags.Contains(t.Name)));
-            if (pet == null)
-            {
-                return new NotFoundResult();
-            }
 
-            return new ObjectResult(pet);
+            return pet == null ? new NotFoundResult() : (IActionResult)new ObjectResult(pet);
         }
 
         [Authorize("pet-store-writer")]

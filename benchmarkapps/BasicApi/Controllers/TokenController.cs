@@ -47,8 +47,7 @@ namespace BasicApi.Controllers
         [HttpGet("/token")]
         public IActionResult GetToken(string username)
         {
-            ClaimsIdentity identity;
-            if (username == null || !_identities.TryGetValue(username, out identity))
+            if (username == null || !_identities.TryGetValue(username, out var identity))
             {
                 return new StatusCodeResult(403);
             }
