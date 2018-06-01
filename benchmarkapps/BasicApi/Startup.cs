@@ -58,6 +58,7 @@ namespace BasicApi
 
             services
                 .AddMvcCore()
+                .AddAuthorization()
                 .AddJsonFormatters(json => json.ContractResolver = new CamelCasePropertyNamesContractResolver())
                 .AddDataAnnotations();
 
