@@ -1,0 +1,21 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "Headers": {
+      "Cache-Control": "no-cache"
+    },
+    "PresetHeaders": "Html",
+    "ReadyStateText": "Application started.",
+    "Source": {
+      "BranchOrCommit": "dougbu/add.performance.apps",
+      "Project": "benchmarkapps/BasicViews/BasicViews.csproj",
+      "Repository": "https://github.com/aspnet/mvc.git"
+    }
+  },
+  "GetHtmlHelpers": {
+    "Path": "/"
+  },
+  "GetTagHelpers": {
+    "Path": "/Home/HtmlHelpers"
+  }
+}
