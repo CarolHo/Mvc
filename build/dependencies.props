@@ -94,6 +94,7 @@
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26531-03</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26531-03</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26531-03</SystemThreadingTasksExtensionsPackageVersion>

@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using BasicApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -14,11 +13,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
+using Npgsql;
 
 namespace BasicApi
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             var rsa = new RSACryptoServiceProvider(2048);
@@ -35,9 +42,45 @@ namespace BasicApi
                 options.TokenValidationParameters.ValidIssuer = "BasicApi";
             });
 
-            services
-                .AddEntityFrameworkSqlite()
-                .AddDbContext<BasicApiContext>();
+            switch (Configuration["Database"])
+            {
+                case "None":
+                    // No database needed
+                    break;
+
+                case var database when string.IsNullOrEmpty(database):
+                    // Use SQLite when running outside a benchmark test.
+                    services
+                        .AddEntityFrameworkSqlite()
+                        .AddDbContextPool<BasicApiContext>(options => options.UseSqlite("Data Source=BasicApi.db"));
+                    break;
+
+                case "PostgreSql":
+                    var connectionString = Configuration["ConnectionString"];
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new ArgumentException("Connection string must be specified for Npgsql.");
+                    }
+
+                    var settings = new NpgsqlConnectionStringBuilder(connectionString);
+                    if (!settings.NoResetOnClose)
+                    {
+                        throw new ArgumentException("No Reset On Close=true must be specified for Npgsql.");
+                    }
+                    if (settings.Enlist)
+                    {
+                        throw new ArgumentException("Enlist=false must be specified for Npgsql.");
+                    }
+
+                    services
+                        .AddEntityFrameworkNpgsql()
+                        .AddDbContextPool<BasicApiContext>(options => options.UseNpgsql(connectionString));
+                    break;
+
+                default:
+                    throw new ArgumentException(
+                        $"Application does not support database type {Configuration["Database"]}.");
+            }
 
             services.AddAuthorization(options =>
             {
@@ -65,9 +108,21 @@ namespace BasicApi
             services.AddSingleton(new PetRepository());
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment hosting)
+        public void Configure(IApplicationBuilder app, IApplicationLifetime lifetime)
         {
-            CreateDatabase(app.ApplicationServices, hosting.ContentRootPath);
+            var services = app.ApplicationServices;
+            switch (Configuration["Database"])
+            {
+                case var database when string.IsNullOrEmpty(database):
+                    CreateDatabase(services);
+                    lifetime.ApplicationStopping.Register(() => DropDatabase(services));
+                    break;
+
+                case "PostgreSql":
+                    CreateDatabase(services);
+                    lifetime.ApplicationStopping.Register(() => DropDatabaseTables(services));
+                    break;
+            }
 
             app.Use(next => async context =>
             {
@@ -86,22 +141,39 @@ namespace BasicApi
             app.UseMvc();
         }
 
-        private void CreateDatabase(IServiceProvider services, string contentRoot)
+        private static void CreateDatabase(IServiceProvider services)
         {
             using (var serviceScope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var dbContext = services.GetRequiredService<BasicApiContext>();
-                dbContext.Database.EnsureDeleted();
-                Task.Delay(TimeSpan.FromSeconds(3)).Wait();
-                dbContext.Database.EnsureCreated();
-
-                using (var connection = dbContext.Database.GetDbConnection())
+                using (var dbContext = services.GetRequiredService<BasicApiContext>())
                 {
-                    connection.Open();
+                    // Contrary to general documentation, creates and seeds tables even if PostgreSQL database exists.
+                    dbContext.Database.EnsureCreated();
+                }
+            }
+        }
 
-                    var command = connection.CreateCommand();
-                    command.CommandText = File.ReadAllText(Path.Combine(contentRoot, "seed.sql"));
-                    command.ExecuteNonQuery();
+        private static void DropDatabase(IServiceProvider services)
+        {
+            using (var serviceScope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                using (var dbContext = services.GetRequiredService<BasicApiContext>())
+                {
+                    dbContext.Database.EnsureDeleted();
+                }
+            }
+        }
+
+        private static void DropDatabaseTables(IServiceProvider services)
+        {
+            using (var serviceScope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                using (var dbContext = services.GetRequiredService<BasicApiContext>())
+                {
+                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Images]");
+                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Tags]");
+                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Pets]");
+                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Categories]");
                 }
             }
         }
@@ -114,14 +186,19 @@ namespace BasicApi
             host.Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+
+            return new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://+:5000")
-                .UseConfiguration(new ConfigurationBuilder()
-                    .AddCommandLine(args)
-                    .Build())
+                .UseConfiguration(configuration)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
+        }
     }
 }
