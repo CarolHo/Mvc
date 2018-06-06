@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace BasicApi.Controllers
 {
@@ -16,6 +17,8 @@ namespace BasicApi.Controllers
     [Route("/pet")]
     public class PetController : ControllerBase
     {
+        private static bool _logged;
+
         public PetController(BasicApiContext dbContext)
         {
             DbContext = dbContext;
@@ -80,8 +83,35 @@ namespace BasicApi.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
 
-            DbContext.Pets.Add(pet);
-            await DbContext.SaveChangesAsync();
+            try
+            {
+                DbContext.Pets.Add(pet);
+                await DbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException exception) when (exception.InnerException is PostgresException postgresException)
+            {
+                // Temporarily, do not rethrow the Exception. This cleans up the server-side tracing.
+                if (!_logged)
+                {
+                    _logged = true;
+
+                    Console.WriteLine($"Pet id {pet.Id}");
+                    Console.WriteLine($"Exception column '{postgresException.ColumnName}'");
+                    Console.WriteLine($"Exception constraint '{postgresException.ConstraintName}'");
+                    Console.WriteLine($"Exception data type '{postgresException.DataTypeName}'");
+                    Console.WriteLine($"Exception detail '{postgresException.Detail}'");
+                    Console.WriteLine($"Exception hint '{postgresException.Hint}'");
+                    Console.WriteLine($"Exception inner '{postgresException.InnerException}'");
+                    Console.WriteLine($"Exception internal position '{postgresException.InternalPosition}'");
+                    Console.WriteLine($"Exception schema '{postgresException.SchemaName}'");
+                    Console.WriteLine($"Exception statement '{postgresException.Statement}'");
+                    Console.WriteLine($"Exception table '{postgresException.TableName}'");
+
+                    var firstTag = await DbContext.Tags.FirstOrDefaultAsync();
+                    var lastTag = await DbContext.Tags.LastOrDefaultAsync();
+                    Console.WriteLine($"Tags have range {firstTag?.Id} to {lastTag?.Id}");
+                }
+            }
 
             return new CreatedAtRouteResult("FindPetById", new { id = pet.Id }, pet);
         }
