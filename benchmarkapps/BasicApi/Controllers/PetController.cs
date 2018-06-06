@@ -83,6 +83,7 @@ namespace BasicApi.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
 
+            var originalId = pet.Id;
             try
             {
                 DbContext.Pets.Add(pet);
@@ -95,7 +96,19 @@ namespace BasicApi.Controllers
                 {
                     _logged = true;
 
-                    Console.WriteLine($"Pet id {pet.Id}");
+                    Console.WriteLine($"Pet id was {originalId} is {pet.Id}");
+                    Console.WriteLine($"Exception data count '{postgresException.Data.Count}'");
+                    Console.WriteLine($"Exception error code '{postgresException.ErrorCode}'");
+                    Console.WriteLine($"Exception help link '{postgresException.HelpLink}'");
+                    Console.WriteLine($"Exception HResult '{postgresException.HResult}'");
+                    Console.WriteLine($"Exception internal query '{postgresException.InternalQuery}'");
+                    Console.WriteLine($"Exception message '{postgresException.Message}'");
+                    Console.WriteLine($"Exception message text '{postgresException.MessageText}'");
+                    Console.WriteLine($"Exception source '{postgresException.Source}'");
+                    Console.WriteLine($"Exception SQL state '{postgresException.SqlState}'");
+                    Console.WriteLine($"Exception is where '{postgresException.Where}'");
+
+                    /*
                     Console.WriteLine($"Exception column '{postgresException.ColumnName}'");
                     Console.WriteLine($"Exception constraint '{postgresException.ConstraintName}'");
                     Console.WriteLine($"Exception data type '{postgresException.DataTypeName}'");
@@ -106,10 +119,14 @@ namespace BasicApi.Controllers
                     Console.WriteLine($"Exception schema '{postgresException.SchemaName}'");
                     Console.WriteLine($"Exception statement '{postgresException.Statement}'");
                     Console.WriteLine($"Exception table '{postgresException.TableName}'");
+                    */
+                    await Task.Delay(400);
 
                     var firstTag = await DbContext.Tags.FirstOrDefaultAsync();
                     var lastTag = await DbContext.Tags.LastOrDefaultAsync();
                     Console.WriteLine($"Tags have range {firstTag?.Id} to {lastTag?.Id}");
+
+                    await Task.Delay(500);
                 }
             }
 
