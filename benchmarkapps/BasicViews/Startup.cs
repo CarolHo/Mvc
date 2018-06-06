@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,11 @@ namespace BasicViews
                         throw new ArgumentException("Connection string must be specified for Npgsql.");
                     }
 
+                    // Make connection string unique to this application
+                    connectionString = Regex.Replace(
+                        input: connectionString,
+                        pattern: "(Database=)[^;]*;",
+                        replacement: "$1BasicViews;");
                     var settings = new NpgsqlConnectionStringBuilder(connectionString);
                     if (!settings.NoResetOnClose)
                     {
@@ -72,13 +78,9 @@ namespace BasicViews
             switch (Configuration["Database"])
             {
                 case var database when string.IsNullOrEmpty(database):
-                    CreateDatabase(services);
-                    lifetime.ApplicationStopping.Register(() => DropDatabase(services));
-                    break;
-
                 case "PostgreSql":
                     CreateDatabase(services);
-                    lifetime.ApplicationStopping.Register(() => DropDatabaseTable(services));
+                    lifetime.ApplicationStopping.Register(() => DropDatabase(services));
                     break;
             }
 
@@ -118,17 +120,6 @@ namespace BasicViews
                 using (var dbContext = services.GetRequiredService<BasicViewsContext>())
                 {
                     dbContext.Database.EnsureDeleted();
-                }
-            }
-        }
-
-        private static void DropDatabaseTable(IServiceProvider services)
-        {
-            using (var serviceScope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                using (var dbContext = services.GetRequiredService<BasicViewsContext>())
-                {
-                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [People]");
                 }
             }
         }

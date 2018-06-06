@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using BasicApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -62,6 +63,11 @@ namespace BasicApi
                         throw new ArgumentException("Connection string must be specified for Npgsql.");
                     }
 
+                    // Make connection string unique to this application
+                    connectionString = Regex.Replace(
+                        input: connectionString,
+                        pattern: "(Database=)[^;]*;",
+                        replacement: "$1BasicApi;");
                     var settings = new NpgsqlConnectionStringBuilder(connectionString);
                     if (!settings.NoResetOnClose)
                     {
@@ -114,13 +120,9 @@ namespace BasicApi
             switch (Configuration["Database"])
             {
                 case var database when string.IsNullOrEmpty(database):
-                    CreateDatabase(services);
-                    lifetime.ApplicationStopping.Register(() => DropDatabase(services));
-                    break;
-
                 case "PostgreSql":
                     CreateDatabase(services);
-                    lifetime.ApplicationStopping.Register(() => DropDatabaseTables(services));
+                    lifetime.ApplicationStopping.Register(() => DropDatabase(services));
                     break;
             }
 
@@ -160,20 +162,6 @@ namespace BasicApi
                 using (var dbContext = services.GetRequiredService<BasicApiContext>())
                 {
                     dbContext.Database.EnsureDeleted();
-                }
-            }
-        }
-
-        private static void DropDatabaseTables(IServiceProvider services)
-        {
-            using (var serviceScope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                using (var dbContext = services.GetRequiredService<BasicApiContext>())
-                {
-                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Images]");
-                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Tags]");
-                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Pets]");
-                    dbContext.Database.ExecuteSqlCommand("DROP TABLE [Categories]");
                 }
             }
         }
