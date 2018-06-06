@@ -1,6 +1,8 @@
 ﻿-- script that retrieves an authentication token to send in all future requests and adds a body for those requests
 -- keep this file and getWithToken.lua in sync with respect to token handling
 
+logged = false
+
 -- do not use wrk's default request
 local req = nil
 
@@ -73,6 +75,12 @@ function response(status, headers, body)
     if not token then
         print("Failed initial request! status: " .. status)
         wrk.thread:stop()
+    end
+
+    if not logged and status ~= 200 then
+        print("Failed request! status: " .. status)
+        print("Body: " .. body)
+        logged = true
     end
 
     if counter == maxRequests then
