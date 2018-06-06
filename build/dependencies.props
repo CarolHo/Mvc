@@ -55,6 +55,7 @@
     <MicrosoftCodeAnalysisRazorPackageVersion>2.2.0-preview1-34373</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.2.0-preview1-34373</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview1-34373</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-preview1-34373</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
@@ -92,9 +93,11 @@
     <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview1-34373</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <MySqlConnectorVersion>0.40.4</MySqlConnectorVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
+    <PomeloEntityFrameworkCoreMySqlVersion>2.0.1</PomeloEntityFrameworkCoreMySqlVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26531-03</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26531-03</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26531-03</SystemThreadingTasksExtensionsPackageVersion>
